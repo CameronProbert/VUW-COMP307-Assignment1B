@@ -3,7 +3,7 @@ package main;
 import java.util.*;
 import java.io.*;
 
-public class helpercode {
+public class DecisionMaker {
 
 	// some bits of java code that you may use if you wish.
 	// assumes that the enclosing class has fields:
@@ -12,6 +12,8 @@ public class helpercode {
 	List<String> categoryNames;
 	List<String> attNames;
 	List<Instance> allInstances;
+	
+	
 
 	private void readDataFile(String fname) {
 		/*
