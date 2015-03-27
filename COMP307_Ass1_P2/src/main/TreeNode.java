@@ -1,12 +1,12 @@
 package main;
 
-public class TreeNode {
+public class TreeNode implements Node {
 	
 	private String attribute;
-	private TreeNode left;
-	private TreeNode right;
+	private Node left;
+	private Node right;
 	
-	public TreeNode(String bestAtt, TreeNode left, TreeNode right){
+	public TreeNode(String bestAtt, Node left, Node right){
 		this.attribute = bestAtt;
 		this.left = left;
 		this.right = right;

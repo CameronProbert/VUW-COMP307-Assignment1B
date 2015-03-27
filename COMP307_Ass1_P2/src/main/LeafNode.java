@@ -1,6 +1,6 @@
 package main;
 
-public class LeafNode {
+public class LeafNode implements Node {
 
 	private int classification;
 	private double probability;
