@@ -51,12 +51,22 @@ public class DecisionMaker {
 				+ (numCorrect / (double) numTotal) * 100);
 	}
 
+	/**
+	 * Recursively classifies an instance
+	 * 
+	 * @param instance
+	 *            The instance to be classified
+	 * @param node
+	 *            Should be given the root node when manually called
+	 * @return The classification in int form
+	 */
 	private int classify(Instance instance, Node node) {
+		// If it is a leafnode then get a random number and if it is less than
+		// the probability number then return its classification, otherwise
+		// return the other classification
 		if (node instanceof LeafNode) {
 			LeafNode leaf = (LeafNode) node;
-			if (Math.random() < leaf.getProbability()) {
-				return categoryNames.indexOf(leaf.getClassification());
-			}
+			return categoryNames.indexOf(leaf.getClassification());
 		}
 		TreeNode tree = (TreeNode) node;
 		String attribute = tree.getAttribute();
