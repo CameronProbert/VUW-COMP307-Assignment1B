@@ -9,4 +9,12 @@ public class LeafNode implements Node {
 		this.classification = classification;
 		this.probability = probability;
 	}
+
+	public String getClassification() {
+		return classification;
+	}
+
+	public double getProbability() {
+		return probability;
+	}
 }
