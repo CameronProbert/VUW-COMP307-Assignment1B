@@ -348,7 +348,6 @@ public class DecisionMaker {
 	private List<Instance> readInstances(Scanner din) {
 		/* instance = classname and space separated attribute values */
 		List<Instance> instances = new ArrayList<Instance>();
-		String ln;
 		while (din.hasNext()) {
 			Scanner line = new Scanner(din.nextLine());
 			instances
