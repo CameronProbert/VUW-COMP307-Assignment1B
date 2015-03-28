@@ -5,26 +5,22 @@ import java.io.*;
 
 public class DecisionMaker {
 
-	// some bits of java code that you may use if you wish.
-	// assumes that the enclosing class has fields:
 	private int numCategories;
 	private int numAtts;
 	private List<String> categoryNames;
 	private List<String> attNames;
-	private List<Instance> allInstances;
+	private List<Instance> allTrainingInstances;
+	private List<Instance> allTestInstances;
 	private String baselineCategory;
 	private double baselineProb;
 
-	private String fileName1;
-	private String fileName2;
 	private Node rootNode;
 
 	public DecisionMaker(String file1, String file2) {
-		fileName1 = file1;
-		fileName2 = file2;
-		readDataFile(file1);
+		readFile(file1, true);
+		readFile(file2, false);
 		findBaseline();
-		this.rootNode = buildTree(allInstances, clone(attNames));
+		this.rootNode = buildTree(allTrainingInstances, clone(attNames));
 		printTree();
 		classifySecondFile();
 	}
@@ -33,9 +29,42 @@ public class DecisionMaker {
 		System.out.println(rootNode.printTree(""));
 	}
 
+	/**
+	 * Iterates through the test set of instances and classifies each instance
+	 * according to the Decision tree that has been created. It then checks the
+	 * given classification against the actual class of the test instance and to
+	 * determine if the classification was correct. It then works out the
+	 * percentage of correct classifications.
+	 */
 	private void classifySecondFile() {
-		// TODO Auto-generated method stub
+		int numTotal = allTestInstances.size();
+		int numCorrect = 0;
+		for (Instance instance : allTestInstances) {
+			int classification = classify(instance, rootNode);
+			if (classification == instance.getCategory()) {
+				numCorrect++;
+			}
+		}
+		System.out.println("Total number of tests: " + numTotal);
+		System.out.println("Total number of correct tests: " + numCorrect);
+		System.out.println("Percentage of correct tests: "
+				+ (numCorrect / (double) numTotal) * 100);
+	}
 
+	private int classify(Instance instance, Node node) {
+		if (node instanceof LeafNode) {
+			LeafNode leaf = (LeafNode) node;
+			if (Math.random() < leaf.getProbability()) {
+				return categoryNames.indexOf(leaf.getClassification());
+			}
+		}
+		TreeNode tree = (TreeNode) node;
+		String attribute = tree.getAttribute();
+		int attrNum = attNames.indexOf(attribute);
+		if (instance.getAtt(attrNum)) {
+			return classify(instance, tree.getLeft());
+		}
+		return classify(instance, tree.getRight());
 	}
 
 	/**
@@ -43,7 +72,7 @@ public class DecisionMaker {
 	 * data (without factoring in attributes)
 	 */
 	private void findBaseline() {
-		int[] tally = tallyCategories(allInstances);
+		int[] tally = tallyCategories(allTrainingInstances);
 		int numOccuring = 0;
 		String category = null;
 		for (int i = 0; i < tally.length; i++) {
@@ -53,7 +82,7 @@ public class DecisionMaker {
 			}
 		}
 		baselineCategory = category;
-		baselineProb = numOccuring / (double) allInstances.size();
+		baselineProb = numOccuring / (double) allTrainingInstances.size();
 		// System.out.println("Base category: " + baselineCategory);
 		// System.out.println("Base probability: " + baselineProb);
 	}
@@ -270,7 +299,7 @@ public class DecisionMaker {
 	/*
 	 * This method given as helper code
 	 */
-	private void readDataFile(String fname) {
+	private void readFile(String fname, boolean train) {
 		/*
 		 * format of names file: names of categories, separated by spaces names
 		 * of attributes category followed by true's and false's for each
@@ -292,7 +321,11 @@ public class DecisionMaker {
 			numAtts = attNames.size();
 			System.out.println(numAtts + " attributes");
 
-			allInstances = readInstances(din);
+			if (train) {
+				allTrainingInstances = readInstances(din);
+			} else {
+				allTestInstances = readInstances(din);
+			}
 			din.close();
 		} catch (IOException e) {
 			throw new RuntimeException("Data File caused IO exception");
