@@ -26,8 +26,9 @@ public class TreeNode implements Node {
 	
 	public String printTree(String indent){
 		StringBuilder ans = new StringBuilder();
-		ans.append("\n" + indent + "Attribute: " + attribute);
+		ans.append("\n" + indent + "TRUE: " + attribute);
 		ans.append(left.printTree(indent + "|  "));
+		ans.append("\n" + indent + "FALSE: " + attribute);
 		ans.append(right.printTree(indent + "|  "));
 		return ans.toString();
 	}
