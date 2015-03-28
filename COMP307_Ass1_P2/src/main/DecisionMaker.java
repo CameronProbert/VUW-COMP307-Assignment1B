@@ -7,54 +7,253 @@ public class DecisionMaker {
 
 	// some bits of java code that you may use if you wish.
 	// assumes that the enclosing class has fields:
-	int numCategories;
-	int numAtts;
-	List<String> categoryNames;
-	List<String> attNames;
-	List<Instance> allInstances;
-	
-	String fileName1;
-	String fileName2;
-	
+	private int numCategories;
+	private int numAtts;
+	private List<String> categoryNames;
+	private List<String> attNames;
+	private List<Instance> allInstances;
+	private String baselineCategory;
+	private double baselineProb;
+
+	private String fileName1;
+	private String fileName2;
+	private Node rootNode;
+
 	public DecisionMaker(String file1, String file2) {
 		fileName1 = file1;
 		fileName2 = file2;
 		readDataFile(file1);
-		buildTree(allInstances, attNames);
+		findBaseline();
+		this.rootNode = buildTree(allInstances, clone(attNames));
+		printTree();
+		classifySecondFile();
 	}
-	
-	private Instance buildTree(List<Instance> instances, List<String> attributes) {
-	//instances: the set of training instances that have been classified to the node being constructed;
-	//attributes:: the list of attributes that were not used on the path from the root to this node.
-	//BuildTree (Set instances, List attributes)
-			//if instances is empty
-				//return a leaf node containing the name and probability of the overall most probable class (ie, the ‘‘baseline’’ predictor)
-			//if instances are pure
-				//return a leaf node containing the name of the class of the instances in the node and probability 1
-			//if attributes is empty
-				//return a leaf node containing the name and probability of the majority class of the instances in the node (choose randomly if classes are equal)
-			//else find best attribute:
-				//for each attribute
-					//separate instances into two sets: 
-								//instances for which the attribute is true, and
-								//instances for which the attribute is false
-					//compute purity of each set.
-					//if weighted average purity of these sets is best so far
-						//bestAtt = this attribute
-						//bestInstsTrue = set of true instances
-						//bestInstsFalse = set of false instances
-				//build subtrees using the remaining attributes:
-					//left = BuildTree(bestInstsTrue, attributes - bestAtt)
-					//right = BuildTree(bestInstsFalse, attributes - bestAttr)
-				//return Node containing (bestAtt, left, right)
-		return null;
+
+	private void printTree() {
+		System.out.println(rootNode.printTree(""));
 	}
-	
+
+	private void classifySecondFile() {
+		// TODO Auto-generated method stub
+
+	}
+
 	/**
-	 * Checks to make sure it is given only 2 filenames and then creates a DecisionMaker
+	 * Finds the most likely classification and its probability of the overall
+	 * data (without factoring in attributes)
+	 */
+	private void findBaseline() {
+		int[] tally = tallyCategories(allInstances);
+		int numOccuring = 0;
+		String category = null;
+		for (int i = 0; i < tally.length; i++) {
+			if (tally[i] > numOccuring) {
+				numOccuring = tally[i];
+				category = categoryNames.get(i);
+			}
+		}
+		baselineCategory = category;
+		baselineProb = numOccuring / (double) allInstances.size();
+		// System.out.println("Base category: " + baselineCategory);
+		// System.out.println("Base probability: " + baselineProb);
+	}
+
+	/**
+	 * Modelled off psuedo-code in the assignment handout. Recursively creates a
+	 * decision tree out of a set of instances
+	 * 
+	 * @param instances
+	 * @param attributes
+	 * @return
+	 */
+	private Node buildTree(List<Instance> instances, List<String> attributes) {
+		// if instances is empty
+		if (instances.isEmpty()) {
+			// return a leaf node containing the name and probability of the
+			// overall most probable class (ie, the ‘‘baseline’’ predictor)
+			return new LeafNode(baselineCategory, baselineProb);
+		}
+
+		// if instances are pure
+		if (isPure(instances)) {
+			// return a leaf node containing the name of the class of the
+			// instances in the node and probability 1
+			return new LeafNode(categoryNames.get(instances.get(0)
+					.getCategory()), 1);
+		}
+
+		// if attributes is empty
+		if (attributes.isEmpty()) {
+			int[] tally = tallyCategories(instances);
+			int numOccuring = 0;
+			String category = null;
+			for (int i = 0; i < tally.length; i++) {
+				if (tally[i] > numOccuring) {
+					numOccuring = tally[i];
+					category = categoryNames.get(i);
+				}
+			}
+			return new LeafNode(category, numOccuring
+					/ (double) instances.size());
+		}
+
+		// else find best attribute:
+		else {
+			// for each attribute
+			String bestAtt = null;
+			List<Instance> bestInstsTrue = new ArrayList<Instance>();
+			List<Instance> bestInstsFalse = new ArrayList<Instance>();
+			double bestPurity = 1;
+
+			for (String attribute : attributes) {
+
+				// Find the index of the current attribute
+				int indexOfAtt = attNames.indexOf(attribute);
+
+				// Create the lists to sort each instance into for this
+				// attribute
+				List<Instance> instsTrue = new ArrayList<Instance>();
+				List<Instance> instsFalse = new ArrayList<Instance>();
+
+				// separate instances into two sets:
+				for (Instance instance : instances) {
+					// instances for which the attribute is true, and
+					if (instance.getAtt(indexOfAtt)) {
+						instsTrue.add(instance);
+					}
+					// instances for which the attribute is false
+					else {
+						instsFalse.add(instance);
+					}
+				}
+
+				// compute average purity of each set.
+				double aveAttPurity = calculateAverageImpurity(instsTrue,
+						instsFalse);
+				// if weighted average purity of these sets is best so far
+				if (aveAttPurity < bestPurity) {
+					// bestAtt = this attribute
+					bestAtt = attribute;
+					// bestInstsTrue = set of true instances
+					bestInstsTrue = instsTrue;
+					// bestInstsFalse = set of false instances
+					bestInstsFalse = instsFalse;
+				}
+			}
+			attributes.remove(bestAtt);
+			// build subtrees using the remaining attributes:
+			// left = BuildTree(bestInstsTrue, attributes - bestAtt)
+			Node leftNode = buildTree(bestInstsTrue, clone(attributes));
+			// right = BuildTree(bestInstsFalse, attributes - bestAttr)
+			Node rightNode = buildTree(bestInstsFalse, clone(attributes));
+
+			// return Node containing (bestAtt, left, right)
+			return new TreeNode(bestAtt, leftNode, rightNode);
+		}
+	}
+
+	/**
+	 * 
+	 * @param attributes
+	 * @return
+	 */
+	private List<String> clone(List<String> attributes) {
+		List<String> newList = new ArrayList<String>();
+		for (String attribute : attributes) {
+			newList.add(attribute);
+		}
+		return newList;
+	}
+
+	/**
+	 * 
+	 * @param instances
+	 * @return
+	 */
+	private int[] tallyCategories(List<Instance> instances) {
+		int[] tally = new int[numCategories];
+		for (Instance instance : instances) {
+			tally[instance.getCategory()]++;
+		}
+		return tally;
+	}
+
+	/**
+	 * Calculates the impurity of the Only works properly with 2 categories
+	 * 
+	 * @param instances
+	 * @return
+	 */
+	private boolean isPure(List<Instance> instances) {
+		// If there are no instances return 0 impurity
+		// This should never happen
+		if (instances.size() == 0) {
+			System.out
+					.println("SOMETHING IS WRONG - CHECKED IMPURITY OF LENGTH 0 INSTANCES");
+			return true;
+		}
+
+		// Find how often each category occurs
+		int[] count = new int[numCategories];
+		for (Instance instance : instances) {
+			count[instance.getCategory()]++;
+		}
+
+		// Calculate Impurity
+		int totalInstances = instances.size();
+		double impurity = 1; // count[0]/(double)totalInstances;
+		for (int index = 0; index < numCategories; index++) {
+			impurity *= (count[index] / (double) totalInstances);
+		}
+
+		return impurity == 0;
+	}
+
+	/**
+	 * Splits all the instances up by each attribute and calculates the mean
+	 * impurity for these subsets
+	 * 
+	 * @param instsTrue
+	 * @param instsFalse
+	 * @return
+	 */
+	private double calculateAverageImpurity(List<Instance> instsTrue,
+			List<Instance> instsFalse) {
+		double impurityTrue = calculateImpurity(instsTrue);
+		double impurityFalse = calculateImpurity(instsFalse);
+		return (impurityTrue + impurityFalse) / 2.0;
+	}
+
+	private double calculateImpurity(List<Instance> instances) {
+		// If there are no instances return 0 impurity
+		// This should never happen
+		if (instances.size() == 0) {
+			return 0;
+		}
+
+		// Find how often each category occurs
+		int[] count = new int[numCategories];
+		for (Instance instance : instances) {
+			count[instance.getCategory()]++;
+		}
+
+		// Calculate Impurity
+		int totalInstances = instances.size();
+		double impurity = 1; // count[0]/(double)totalInstances;
+		for (int index = 0; index < numCategories; index++) {
+			impurity *= (count[index] / (double) totalInstances);
+		}
+
+		return impurity;
+	}
+
+	/**
+	 * Checks to make sure it is given only 2 filenames and then creates a
+	 * DecisionMaker
+	 * 
 	 * @param args
 	 */
-	public static void main(String[] args){
+	public static void main(String[] args) {
 		// First make sure that the arguments are valid
 		try {
 			if (args.length != 2) {
@@ -67,7 +266,7 @@ public class DecisionMaker {
 		}
 		new DecisionMaker(args[0], args[1]);
 	}
-	
+
 	/*
 	 * This method given as helper code
 	 */
