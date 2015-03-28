@@ -12,4 +12,15 @@ public class TreeNode implements Node {
 		this.right = right;
 	}
 
+	public String getAttribute() {
+		return attribute;
+	}
+
+	public Node getLeft() {
+		return left;
+	}
+
+	public Node getRight() {
+		return right;
+	}
 }
