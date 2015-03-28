@@ -17,4 +17,11 @@ public class LeafNode implements Node {
 	public double getProbability() {
 		return probability;
 	}
+	
+	public String toString(String indent){
+		StringBuilder ans = new StringBuilder();
+		ans.append("\n" + indent + "Classification: " + classification);
+		ans.append(" || Probability: " + Double.toString(probability));
+		return ans.toString();
+	}
 }
