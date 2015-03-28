@@ -24,11 +24,11 @@ public class TreeNode implements Node {
 		return right;
 	}
 	
-	public String toString(String indent){
+	public String printTree(String indent){
 		StringBuilder ans = new StringBuilder();
 		ans.append("\n" + indent + "Attribute: " + attribute);
-		ans.append(left.toString(indent + "|  "));
-		ans.append(right.toString(indent + "|  "));
+		ans.append(left.printTree(indent + "|  "));
+		ans.append(right.printTree(indent + "|  "));
 		return ans.toString();
 	}
 }

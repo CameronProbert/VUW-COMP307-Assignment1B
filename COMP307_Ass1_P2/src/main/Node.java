@@ -2,5 +2,5 @@ package main;
 
 public interface Node {
 
-	public String toString(String indent);
+	public String printTree(String indent);
 }

@@ -18,7 +18,7 @@ public class LeafNode implements Node {
 		return probability;
 	}
 	
-	public String toString(String indent){
+	public String printTree(String indent){
 		StringBuilder ans = new StringBuilder();
 		ans.append("\n" + indent + "Classification: " + classification);
 		ans.append(" || Probability: " + Double.toString(probability));
