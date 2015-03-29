@@ -1,14 +1,20 @@
 package main;
 
+/**
+ * The LeafNode holds a classification and a probability that that
+ * classification occurs. It is a kind of Node.
+ * 
+ * @author Cameron Probert
+ *
+ */
 public class LeafNode implements Node {
 
 	private String classification;
 	private double probability;
-	
-	public LeafNode(String classification, double probability){
+
+	public LeafNode(String classification, double probability) {
 		this.classification = classification;
 		this.probability = probability;
-		System.out.println(this.toString());
 	}
 
 	public String getClassification() {
@@ -18,14 +24,22 @@ public class LeafNode implements Node {
 	public double getProbability() {
 		return probability;
 	}
-	
-	public String printTree(String indent){
+
+	/**
+	 * Returns a String that represents a line of the tree
+	 */
+	public String printTree(String indent) {
 		StringBuilder ans = new StringBuilder();
 		ans.append("\n" + indent + toString());
 		return ans.toString();
 	}
-	
-	public String toString(){
-		return ("LeafNode: Classification = " + classification + " || Probability = " + probability);
+
+	/**
+	 * Returns a string that contains all needed information about the LeafNode
+	 */
+	@Override
+	public String toString() {
+		return ("LeafNode: Classification = " + classification
+				+ " || Probability = " + probability);
 	}
 }
