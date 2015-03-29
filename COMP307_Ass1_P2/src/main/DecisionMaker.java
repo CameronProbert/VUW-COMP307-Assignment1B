@@ -235,7 +235,8 @@ public class DecisionMaker {
 	}
 
 	/**
-	 * Creates a new
+	 * Creates a new List that contains the same strings as the given list
+	 * 
 	 * @param attributes
 	 * @return
 	 */
@@ -248,6 +249,8 @@ public class DecisionMaker {
 	}
 
 	/**
+	 * Finds the total number of each category (live or die) in a set of
+	 * instances
 	 * 
 	 * @param instances
 	 * @return
@@ -309,6 +312,11 @@ public class DecisionMaker {
 		return impurityTrue + impurityFalse;
 	}
 
+	/**
+	 * Calculates the impurity of a set of instances
+	 * @param instances
+	 * @return
+	 */
 	private double calculateImpurity(List<Instance> instances) {
 		// If there are no instances return 0 impurity
 		// This should never happen
