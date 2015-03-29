@@ -8,6 +8,7 @@ public class LeafNode implements Node {
 	public LeafNode(String classification, double probability){
 		this.classification = classification;
 		this.probability = probability;
+		System.out.println(this.toString());
 	}
 
 	public String getClassification() {
@@ -20,8 +21,11 @@ public class LeafNode implements Node {
 	
 	public String printTree(String indent){
 		StringBuilder ans = new StringBuilder();
-		ans.append("\n" + indent + "Classification: " + classification);
-		ans.append(" || Probability: " + Double.toString(probability));
+		ans.append("\n" + indent + toString());
 		return ans.toString();
+	}
+	
+	public String toString(){
+		return ("LeafNode: Classification = " + classification + " || Probability = " + probability);
 	}
 }
