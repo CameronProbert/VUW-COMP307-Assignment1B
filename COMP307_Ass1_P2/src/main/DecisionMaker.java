@@ -3,30 +3,66 @@ package main;
 import java.util.*;
 import java.io.*;
 
+/**
+ * The DecisionMaker takes 2 files (a training file and a test file) and builds
+ * a tree with the training file, then tests the accuracy of the tree with a
+ * test file.
+ * 
+ * @author Cameron Probert
+ *
+ */
 public class DecisionMaker {
 
+	// Attributes of the data
 	private int numCategories;
 	private int numAtts;
 	private List<String> categoryNames;
 	private List<String> attNames;
+
+	// Lists of the instances
 	private List<Instance> allTrainingInstances;
 	private List<Instance> allTestInstances;
+
+	// Base live and die probability
 	private String baselineCategory;
 	private double baselineProb;
 
+	// The root node of the decision tree
 	private Node rootNode;
 
+	/**
+	 * Constructs and tests the tree
+	 * 
+	 * @param file1
+	 * @param file2
+	 */
 	public DecisionMaker(String file1, String file2) {
+		// Read in both files
 		readFile(file1, true);
 		readFile(file2, false);
+
+		// Calculate the probability that a patient lives or dies
 		findBaseline();
+
+		// Build the decision tree
 		this.rootNode = buildTree(allTrainingInstances, clone(attNames));
+
+		// Print the tree
 		printTree();
+
+		// Test the tree with the second file
 		classifySecondFile();
 	}
 
+	/**
+	 * Prints the tree
+	 */
 	private void printTree() {
-		System.out.println(rootNode.printTree(""));
+		if (rootNode != null) {
+			System.out.println(rootNode.printTree(""));
+		} else {
+			System.out.println("RootNode has not be initialised!");
+		}
 	}
 
 	/**
@@ -39,13 +75,17 @@ public class DecisionMaker {
 	private void classifySecondFile() {
 		int numTotal = allTestInstances.size();
 		int numCorrect = 0;
+
+		// Classify each instance
 		for (Instance instance : allTestInstances) {
 			int classification = classify(instance, rootNode);
 			if (classification == instance.getCategory()) {
 				numCorrect++;
 			}
 		}
-		System.out.println("Total number of tests: " + numTotal);
+
+		// Print data
+		System.out.println("\nTotal number of tests: " + numTotal);
 		System.out.println("Total number of correct tests: " + numCorrect);
 		System.out.println("Percentage of correct tests: "
 				+ (numCorrect / (double) numTotal) * 100);
@@ -61,6 +101,7 @@ public class DecisionMaker {
 	 * @return The classification in int form
 	 */
 	private int classify(Instance instance, Node node) {
+
 		// If it is a leafnode then get a random number and if it is less than
 		// the probability number then return its classification, otherwise
 		// return the other classification
@@ -68,6 +109,9 @@ public class DecisionMaker {
 			LeafNode leaf = (LeafNode) node;
 			return categoryNames.indexOf(leaf.getClassification());
 		}
+
+		// Otherwise check the attribute of the tree node and compare it to that
+		// attribute of the instance to see which branch it should take
 		TreeNode tree = (TreeNode) node;
 		String attribute = tree.getAttribute();
 		int attrNum = attNames.indexOf(attribute);
@@ -86,6 +130,8 @@ public class DecisionMaker {
 		int numOccuring = 0;
 		String category = null;
 		for (int i = 0; i < tally.length; i++) {
+			// The most occurring category (live or die) gets calculated and the
+			// number of times
 			if (tally[i] > numOccuring) {
 				numOccuring = tally[i];
 				category = categoryNames.get(i);
@@ -93,8 +139,6 @@ public class DecisionMaker {
 		}
 		baselineCategory = category;
 		baselineProb = numOccuring / (double) allTrainingInstances.size();
-		// System.out.println("Base category: " + baselineCategory);
-		// System.out.println("Base probability: " + baselineProb);
 	}
 
 	/**
@@ -167,15 +211,14 @@ public class DecisionMaker {
 				}
 
 				// compute average purity of each set.
-				double aveAttPurity = calculateAverageImpurity(instsTrue,
+				double aveAttPurity = calculateWeightedImpurity(instsTrue,
 						instsFalse);
 				// if weighted average purity of these sets is best so far
 				if (aveAttPurity < bestPurity) {
-					// bestAtt = this attribute
+					// Update best data
+					bestPurity = aveAttPurity;
 					bestAtt = attribute;
-					// bestInstsTrue = set of true instances
 					bestInstsTrue = instsTrue;
-					// bestInstsFalse = set of false instances
 					bestInstsFalse = instsFalse;
 				}
 			}
@@ -192,7 +235,7 @@ public class DecisionMaker {
 	}
 
 	/**
-	 * 
+	 * Creates a new
 	 * @param attributes
 	 * @return
 	 */
@@ -249,18 +292,21 @@ public class DecisionMaker {
 	}
 
 	/**
-	 * Splits all the instances up by each attribute and calculates the mean
-	 * impurity for these subsets
+	 * Calculates the impurity of each subset and weights it to determine the
+	 * weighted impurity
 	 * 
 	 * @param instsTrue
 	 * @param instsFalse
 	 * @return
 	 */
-	private double calculateAverageImpurity(List<Instance> instsTrue,
+	private double calculateWeightedImpurity(List<Instance> instsTrue,
 			List<Instance> instsFalse) {
-		double impurityTrue = calculateImpurity(instsTrue);
-		double impurityFalse = calculateImpurity(instsFalse);
-		return (impurityTrue + impurityFalse) / 2.0;
+		double totalInsts = instsTrue.size() + instsFalse.size();
+		double impurityTrue = calculateImpurity(instsTrue)
+				* (instsTrue.size() / totalInsts);
+		double impurityFalse = calculateImpurity(instsFalse)
+				* (instsFalse.size() / totalInsts);
+		return impurityTrue + impurityFalse;
 	}
 
 	private double calculateImpurity(List<Instance> instances) {
