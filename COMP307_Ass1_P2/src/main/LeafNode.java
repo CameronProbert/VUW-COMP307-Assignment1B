@@ -30,7 +30,8 @@ public class LeafNode implements Node {
 	 */
 	public String printTree(String indent) {
 		StringBuilder ans = new StringBuilder();
-		ans.append("\n" + indent + toString());
+		String s = toString().replaceFirst("LeafNode: ", "");
+		ans.append("\n" + indent + s);
 		return ans.toString();
 	}
 
