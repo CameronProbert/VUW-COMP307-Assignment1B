@@ -37,9 +37,8 @@ public class DecisionMaker {
 	 * @param file2
 	 */
 	public DecisionMaker(String file1, String file2) {
-		// Read in both files
+		// Read in training files
 		readFile(file1, true);
-		readFile(file2, false);
 
 		// Calculate the probability that a patient lives or dies
 		findBaseline();
@@ -49,6 +48,9 @@ public class DecisionMaker {
 
 		// Print the tree
 		printTree();
+
+		// Read in test
+		readFile(file2, false);
 
 		// Test the tree with the second file
 		classifySecondFile();
@@ -314,6 +316,7 @@ public class DecisionMaker {
 
 	/**
 	 * Calculates the impurity of a set of instances
+	 * 
 	 * @param instances
 	 * @return
 	 */
