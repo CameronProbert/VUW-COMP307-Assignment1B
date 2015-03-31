@@ -29,6 +29,7 @@ public class DecisionMaker {
 
 	// The root node of the decision tree
 	private Node rootNode;
+	private PrintWriter writer;
 
 	/**
 	 * Constructs and tests the tree
@@ -37,6 +38,14 @@ public class DecisionMaker {
 	 * @param file2
 	 */
 	public DecisionMaker(String file1, String file2) {
+
+		try {
+			writer = new PrintWriter("output.txt");
+		} catch (FileNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
 		// Read in training files
 		readFile(file1, true);
 
@@ -54,6 +63,8 @@ public class DecisionMaker {
 
 		// Test the tree with the second file
 		classifySecondFile();
+
+		writer.close();
 	}
 
 	/**
@@ -61,6 +72,7 @@ public class DecisionMaker {
 	 */
 	private void printTree() {
 		if (rootNode != null) {
+			writer.println(rootNode.printTree(""));
 			System.out.println(rootNode.printTree(""));
 		} else {
 			System.out.println("RootNode has not be initialised!");
@@ -90,6 +102,10 @@ public class DecisionMaker {
 		System.out.println("\nTotal number of tests: " + numTotal);
 		System.out.println("Total number of correct tests: " + numCorrect);
 		System.out.println("Percentage of correct tests: "
+				+ (numCorrect / (double) numTotal) * 100);
+		writer.println("\nTotal number of tests: " + numTotal);
+		writer.println("Total number of correct tests: " + numCorrect);
+		writer.println("Percentage of correct tests: "
 				+ (numCorrect / (double) numTotal) * 100);
 	}
 
